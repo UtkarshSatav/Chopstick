@@ -1,0 +1,333 @@
+
+"use client";
+
+import { useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useCart } from "@/context/CartContext";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import { FaTrash, FaPlus, FaMinus, FaWhatsapp, FaShoppingBag } from "react-icons/fa";
+import { placeOrder } from "@/lib/orders";
+
+const WHATSAPP_NUMBER = "919607507443";
+
+export default function CartPage() {
+    const router = useRouter();
+    const { cart, removeFromCart, updateQuantity, cartTotal, clearCart } = useCart();
+    const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+
+    // User Details
+    const [name, setName] = useState("");
+    const [phone, setPhone] = useState("");
+    const [email, setEmail] = useState("");
+
+    // Address Details
+    const [flatNo, setFlatNo] = useState("");
+    const [area, setArea] = useState("");
+    const [landmark, setLandmark] = useState("");
+
+    const generateWhatsAppLink = () => {
+        let message = `*New Order from ${name}*\n`;
+        message += `Phone: ${phone}\n`;
+        if (email) message += `Email: ${email}\n`;
+
+        message += `\n*Delivery Address:*\n`;
+        message += `${flatNo}\n`;
+        message += `${area}\n`;
+        if (landmark) message += `Landmark: ${landmark}\n`;
+
+        message += `\n*Order Details:*\n`;
+
+        cart.forEach((item) => {
+            message += `- ${item.name} x ${item.quantity} = ₹${item.price * item.quantity}\n`;
+        });
+
+        message += `\n*Total Amount: ₹${cartTotal}*`;
+        message += `\n\nPlease confirm my order.`;
+
+        const encodedMessage = encodeURIComponent(message);
+        return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
+    };
+
+    const isValidPhone = (p: string) => {
+        const cleaned = p.replace(/\D/g, '');
+        return cleaned.length === 10;
+    };
+
+    const isValidEmail = (e: string) => {
+        if (!e) return true; // Email is optional
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+    };
+
+    const isFormValid = name && isValidPhone(phone) && isValidEmail(email) && flatNo && area && cart.length > 0;
+
+    const handlePlaceOrder = async () => {
+        if (!isFormValid) {
+            if (!name) alert("Please enter your name.");
+            else if (!phone) alert("Please enter your phone number.");
+            else if (!isValidPhone(phone)) alert("Please enter a valid 10-digit phone number.");
+            else if (!isValidEmail(email)) alert("Please enter a valid email address.");
+            else if (!flatNo) alert("Please enter your Flat / House number.");
+            else if (!area) alert("Please enter your Area / Locality.");
+            return;
+        }
+
+        setIsPlacingOrder(true);
+        try {
+            const orderId = await placeOrder({
+                customerName: name,
+                customerPhone: phone.replace(/\D/g, ''),
+                customerEmail: email || undefined,
+                items: cart.map(item => ({
+                    id: item.id,
+                    name: item.name,
+                    price: item.price,
+                    quantity: item.quantity,
+                    image: item.image,
+                })),
+                subtotal: cartTotal,
+                deliveryCharge: 0,
+                total: cartTotal,
+                address: {
+                    flatNo,
+                    area,
+                    landmark: landmark || undefined,
+                    distance: "",
+                },
+            });
+
+            // Save order ID to localStorage for tracking
+            const existingIds = JSON.parse(localStorage.getItem('chopstick-order-ids') || '[]');
+            existingIds.unshift(orderId);
+            localStorage.setItem('chopstick-order-ids', JSON.stringify(existingIds));
+
+            // Save customer info for future orders
+            localStorage.setItem('chopstick-customer', JSON.stringify({ name, phone, email }));
+
+            clearCart();
+            router.push('/orders');
+        } catch (error) {
+            console.error('Error placing order:', error);
+            alert('Failed to place order. Please try again.');
+        } finally {
+            setIsPlacingOrder(false);
+        }
+    };
+
+    return (
+        <main className="min-h-screen bg-cream flex flex-col">
+            <Navbar />
+
+            <div className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 pt-40 pb-24 sm:py-32">
+                <h1 className="text-3xl md:text-4xl font-display font-bold text-accent mb-8 text-center">Your Cart</h1>
+
+                {cart.length === 0 ? (
+                    <div className="text-center space-y-6 bg-white p-8 rounded-2xl shadow-sm max-w-lg mx-auto">
+                        <p className="text-gray-500 text-lg">Your cart is empty.</p>
+                        <Link href="/menu" className="inline-block px-8 py-3 bg-primary text-accent font-bold uppercase tracking-widest rounded-sm hover:bg-accent hover:text-white transition-all shadow-md">
+                            Browse Menu
+                        </Link>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                        {/* Cart Items */}
+                        <div className="space-y-6">
+                            <div className="bg-white rounded-2xl shadow-sm overflow-hidden p-6 space-y-6">
+                                <h2 className="text-xl font-bold text-accent border-b pb-4">Items</h2>
+                                {cart.map((item) => (
+                                    <div key={item.id} className="flex gap-4 items-center border-b border-gray-100 pb-6 last:pb-0 last:border-0">
+                                        <div className="relative w-24 h-24 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
+                                            <Image
+                                                src={item.image}
+                                                alt={item.name}
+                                                fill
+                                                className="object-cover"
+                                            />
+                                        </div>
+                                        <div className="flex-1 flex flex-col justify-between h-24 py-1">
+                                            <div className="flex justify-between items-start gap-2">
+                                                <h3 className="font-bold text-accent text-lg line-clamp-1">{item.name}</h3>
+                                                <button
+                                                    onClick={() => removeFromCart(item.id)}
+                                                    className="text-gray-300 hover:text-red-500 transition-colors p-1"
+                                                    aria-label={`Remove ${item.name}`}
+                                                >
+                                                    <FaTrash size={14} />
+                                                </button>
+                                            </div>
+
+                                            <div className="flex justify-between items-center mt-auto">
+                                                <p className="text-primary font-bold text-md">₹{item.price}</p>
+
+                                                <div className="flex items-center gap-3 bg-gray-50 rounded-full px-3 py-1 border border-gray-200">
+                                                    <button
+                                                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                                                        className="w-6 h-6 flex items-center justify-center text-gray-500 hover:text-accent transition-colors"
+                                                        aria-label="Decrease quantity"
+                                                    >
+                                                        <FaMinus size={10} />
+                                                    </button>
+                                                    <span className="font-bold text-accent w-6 text-center">{item.quantity}</span>
+                                                    <button
+                                                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                                        className="w-6 h-6 flex items-center justify-center text-gray-500 hover:text-accent transition-colors"
+                                                        aria-label="Increase quantity"
+                                                    >
+                                                        <FaPlus size={10} />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Checkout Section */}
+                        <div className="space-y-6">
+                            <div className="bg-white rounded-2xl shadow-sm p-6 space-y-6">
+                                <h2 className="text-xl font-bold text-accent border-b pb-4">Delivery Details</h2>
+
+                                <div className="space-y-4">
+                                    <div>
+                                        <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Name <span className="text-red-500">*</span></label>
+                                        <input
+                                            type="text"
+                                            id="name"
+                                            value={name}
+                                            onChange={(e) => setName(e.target.value)}
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+                                            placeholder="Your Name"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">Phone Number <span className="text-red-500">*</span></label>
+                                        <input
+                                            type="tel"
+                                            id="phone"
+                                            value={phone}
+                                            onChange={(e) => setPhone(e.target.value)}
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+                                            placeholder="Your Phone Number"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email <span className="text-gray-400 font-normal">(Optional)</span></label>
+                                        <input
+                                            type="email"
+                                            id="email"
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+                                            placeholder="Your Email"
+                                        />
+                                    </div>
+
+                                    {/* Address Details */}
+                                    <div className="pt-2 border-t border-gray-100 mt-4">
+                                        <h3 className="text-md font-bold text-accent mb-3">Delivery Address</h3>
+                                        <div className="space-y-3">
+                                            <div>
+                                                <label htmlFor="flatNo" className="block text-sm font-medium text-gray-700 mb-1">Flat / House No / Floor / Building <span className="text-red-500">*</span></label>
+                                                <input
+                                                    type="text"
+                                                    id="flatNo"
+                                                    value={flatNo}
+                                                    onChange={(e) => setFlatNo(e.target.value)}
+                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+                                                    placeholder="e.g. Flat 402, Sunshine Apts"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label htmlFor="area" className="block text-sm font-medium text-gray-700 mb-1">Area / Sector / Locality <span className="text-red-500">*</span></label>
+                                                <input
+                                                    type="text"
+                                                    id="area"
+                                                    value={area}
+                                                    onChange={(e) => setArea(e.target.value)}
+                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+                                                    placeholder="e.g. Viman Nagar"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label htmlFor="landmark" className="block text-sm font-medium text-gray-700 mb-1">Nearby Landmark <span className="text-gray-400 font-normal">(Optional)</span></label>
+                                                <input
+                                                    type="text"
+                                                    id="landmark"
+                                                    value={landmark}
+                                                    onChange={(e) => setLandmark(e.target.value)}
+                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+                                                    placeholder="e.g. Near Datta Mandir"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Order Summary */}
+                            <div className="bg-white rounded-2xl shadow-sm p-6 space-y-4">
+                                <h2 className="text-xl font-bold text-accent border-b pb-4">Order Summary</h2>
+
+                                <div className="space-y-2 text-sm text-gray-600">
+                                    {cart.map((item) => (
+                                        <div key={item.id} className="flex justify-between">
+                                            <span>{item.name} × {item.quantity}</span>
+                                            <span>₹{item.price * item.quantity}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="flex justify-between items-center text-xl font-bold text-accent pt-4 border-t border-gray-100">
+                                    <span>Total</span>
+                                    <span>₹{cartTotal}</span>
+                                </div>
+
+                                {/* Place Order Button */}
+                                <button
+                                    onClick={handlePlaceOrder}
+                                    disabled={isPlacingOrder}
+                                    className={`w-full font-bold py-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 mt-4 text-white uppercase tracking-wider
+                                        ${isFormValid && !isPlacingOrder
+                                            ? 'bg-primary hover:bg-accent cursor-pointer transform hover:-translate-y-1'
+                                            : 'bg-gray-300 cursor-not-allowed'}`}
+                                >
+                                    {isPlacingOrder ? (
+                                        <><span className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full"></span> Placing Order...</>
+                                    ) : (
+                                        <><FaShoppingBag className="text-lg" /> Place Order</>
+                                    )}
+                                </button>
+                                <p className="text-center text-xs text-gray-400">
+                                    Your order will be sent to the restaurant for confirmation.
+                                </p>
+
+                                <div className="relative my-4">
+                                    <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200"></div></div>
+                                    <div className="relative flex justify-center"><span className="bg-white px-3 text-xs text-gray-400">or</span></div>
+                                </div>
+
+                                <a
+                                    href={isFormValid ? generateWhatsAppLink() : undefined}
+                                    target={isFormValid ? "_blank" : undefined}
+                                    rel="noreferrer"
+                                    onClick={(e) => { if (!isFormValid) e.preventDefault(); }}
+                                    className={`block w-full text-center font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2 text-sm
+                                        ${isFormValid
+                                            ? 'bg-[#25D366] text-white hover:bg-[#128C7E] cursor-pointer'
+                                            : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
+                                >
+                                    <FaWhatsapp className="text-lg" />
+                                    Order via WhatsApp
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            <Footer />
+        </main>
+    );
+}
