@@ -51,12 +51,17 @@ function processMenuData(menuData: any): any[] {
                 categories.push("rice-breads");
             }
 
-            const isVeg = itemType.includes("vegetarian") ||
-                categoryName.includes("veg") ||
+            // Use the category-level `type` as the primary source of truth.
+            // Also check for a per-item `type` override (e.g. "Drumstick Soup" inside a non-veg category).
+            const itemLevelType = (item.type || "").toLowerCase();
+            const effectiveType = itemLevelType || itemType;
+
+            const isVeg = effectiveType === "vegetarian" ||
+                // Match "veg" as a standalone word in category name, NOT inside "non-veg"
+                /\bveg\b/.test(categoryName.replace(/non-veg/gi, "")) ||
                 item.name.toLowerCase().includes("veg") ||
                 item.name.toLowerCase().includes("paneer") ||
                 item.name.toLowerCase().includes("dal") ||
-                item.name.toLowerCase().includes("mushroom") ||
                 item.name.toLowerCase().includes("gobi") ||
                 item.name.toLowerCase().includes("aloo");
 
@@ -122,7 +127,7 @@ function calculateRelevance(itemName: string, searchQuery: string): number {
     return 0;
 }
 
-// Group products by categoryName
+// Group products by categoryName and prepend a "Recommended" category.
 function groupByCategory(products: any[]): { name: string; items: any[] }[] {
     const map = new Map<string, any[]>();
     for (const p of products) {
@@ -130,11 +135,27 @@ function groupByCategory(products: any[]): { name: string; items: any[] }[] {
         if (!map.has(key)) map.set(key, []);
         map.get(key)!.push(p);
     }
-    return Array.from(map.entries()).map(([name, items]) => ({ name, items }));
+
+    // Pick 4 random items for a Recommended category
+    const allProductsArray = Array.from(products);
+    const seed = 42;
+    const shuffled = [...allProductsArray].sort((a, b) => {
+        const ha = ((a.id.charCodeAt(a.id.length - 1) * seed) % 997);
+        const hb = ((b.id.charCodeAt(b.id.length - 1) * seed) % 997);
+        return ha - hb;
+    });
+
+    const recs = shuffled.slice(0, 4);
+    const groups = Array.from(map.entries()).map(([name, items]) => ({ name, items }));
+
+    if (recs.length > 0) {
+        groups.unshift({ name: "Recommended", items: recs });
+    }
+
+    return groups;
 }
 
-export default function MenuGrid({ selectedCategory, selectedFilter = "all", searchQuery = "", onResultsChange }: {
-    selectedCategory: string;
+export default function MenuGrid({ selectedFilter = "all", searchQuery = "", onResultsChange }: {
     selectedFilter?: string;
     searchQuery?: string;
     onResultsChange?: (count: number) => void;
@@ -170,9 +191,7 @@ export default function MenuGrid({ selectedCategory, selectedFilter = "all", sea
                 .filter((p: any) => p.relevance > 0)
                 .sort((a: any, b: any) => b.relevance - a.relevance);
         } else {
-            results = selectedCategory === "all"
-                ? products
-                : products.filter((p: any) => p.categories.includes(selectedCategory));
+            results = products;
         }
 
         // Apply dietary filter
@@ -183,7 +202,7 @@ export default function MenuGrid({ selectedCategory, selectedFilter = "all", sea
         }
 
         return results;
-    }, [products, searchQuery, selectedCategory, selectedFilter]);
+    }, [products, searchQuery, selectedFilter]);
 
     useEffect(() => {
         if (searchQuery.trim() && onResultsChange) {
@@ -218,7 +237,7 @@ export default function MenuGrid({ selectedCategory, selectedFilter = "all", sea
                 const isCollapsed = collapsedSections.has(group.name);
 
                 return (
-                    <section key={group.name} className="mt-2">
+                    <section key={group.name} id={group.name.toLowerCase().replace(/\s+/g, '-')} className="mt-2 scroll-mt-32">
                         {/* Section Header */}
                         <button
                             onClick={() => toggleSection(group.name)}
@@ -340,75 +359,7 @@ export default function MenuGrid({ selectedCategory, selectedFilter = "all", sea
                                             </div>
                                         );
                                     })}
-
-                                    {/* Recommended for you */}
-                                    {(() => {
-                                        const groupItemIds = new Set(group.items.map((i: any) => i.id));
-                                        const others = products.filter((p: any) => !groupItemIds.has(p.id));
-                                        const seed = group.name.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
-                                        const shuffled = [...others].sort((a, b) => {
-                                            const ha = ((a.id.charCodeAt(a.id.length - 1) * seed) % 997);
-                                            const hb = ((b.id.charCodeAt(b.id.length - 1) * seed) % 997);
-                                            return ha - hb;
-                                        });
-                                        const recs = shuffled.slice(0, 4);
-                                        if (recs.length === 0) return null;
-
-                                        return (
-                                            <div className="mt-2 mb-4">
-                                                <div className="px-4 sm:px-0 py-3 mt-2 mb-2 bg-primary/5 border-l-4 border-primary rounded-r-lg">
-                                                    <h3 className="text-base font-bold text-primary">
-                                                        ✨ Recommended for you
-                                                    </h3>
-                                                </div>
-                                                {recs.map((rec: any, rIdx: number) => {
-                                                    const recCartItem = cart.find(item => item.id === rec.id);
-                                                    const recQty = recCartItem ? recCartItem.quantity : 0;
-
-                                                    return (
-                                                        <div
-                                                            key={rec.id}
-                                                            className={`px-4 sm:px-0 pb-8 mb-4 ${rIdx < recs.length - 1 ? "border-b border-dashed border-gray-200" : ""}`}
-                                                        >
-                                                            <div className="flex gap-4">
-                                                                <div className="flex-1 min-w-0">
-                                                                    <div className="mb-1.5">
-                                                                        <span className={`inline-flex w-4 h-4 border items-center justify-center p-0.5 ${rec.veg ? "border-green-600" : "border-red-600"}`}>
-                                                                            <span className={`w-1.5 h-1.5 rounded-full ${rec.veg ? "bg-green-600" : "bg-red-600"}`}></span>
-                                                                        </span>
-                                                                    </div>
-                                                                    <h3 className="text-base sm:text-lg font-bold text-accent leading-tight mb-1">{rec.name}</h3>
-                                                                    <p className="font-semibold text-accent mb-2">₹{rec.price}</p>
-                                                                    <p className="text-sm text-gray-500 line-clamp-2 leading-relaxed">Authentic preparation with fresh ingredients and traditional spices.</p>
-                                                                </div>
-                                                                <div className="relative w-28 h-28 sm:w-36 sm:h-36 flex-shrink-0">
-                                                                    <Image src={rec.image} alt={rec.name} fill sizes="(max-width: 640px) 112px, 144px" className="object-cover rounded-2xl shadow-sm" />
-                                                                    <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 z-10">
-                                                                        {recQty === 0 ? (
-                                                                            <motion.button
-                                                                                whileTap={{ scale: 0.9 }}
-                                                                                onClick={() => addToCart({ id: rec.id, name: rec.name, price: rec.price, image: rec.image })}
-                                                                                className="bg-white border border-primary/20 shadow-md text-primary font-bold px-6 sm:px-8 py-1.5 sm:py-2 rounded-lg text-sm relative cursor-pointer hover:shadow-lg transition-shadow"
-                                                                            >
-                                                                                ADD
-                                                                                <span className="absolute top-0.5 right-1.5 text-primary/60 text-[10px]">+</span>
-                                                                            </motion.button>
-                                                                        ) : (
-                                                                            <div className="bg-white border border-primary/20 shadow-md rounded-lg flex items-center overflow-hidden">
-                                                                                <motion.button whileTap={{ scale: 0.9 }} onClick={() => updateQuantity(rec.id, recQty - 1)} className="px-2.5 py-1.5 text-primary font-bold text-sm hover:bg-primary/5 transition-colors cursor-pointer"><FaMinus size={10} /></motion.button>
-                                                                                <span className="px-3 py-1.5 text-primary font-bold text-sm min-w-[28px] text-center">{recQty}</span>
-                                                                                <motion.button whileTap={{ scale: 0.9 }} onClick={() => updateQuantity(rec.id, recQty + 1)} className="px-2.5 py-1.5 text-primary font-bold text-sm hover:bg-primary/5 transition-colors cursor-pointer"><FaPlus size={10} /></motion.button>
-                                                                            </div>
-                                                                        )}
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    );
-                                                })}
-                                            </div>
-                                        );
-                                    })()}
+                                    {/* End of Items */}
                                 </motion.div>
                             )}
                         </AnimatePresence>

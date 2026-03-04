@@ -3,7 +3,6 @@
 import { motion } from "framer-motion";
 
 const filters = [
-    { id: "all", label: "Filters", icon: "tune", type: "icon" },
     { id: "veg", label: "Veg", type: "veg" },
     { id: "non-veg", label: "Non-veg", type: "nonveg" },
 ];
@@ -24,8 +23,8 @@ export default function FilterChips({ selectedFilter, onSelectFilter }: FilterCh
                         whileTap={{ scale: 0.95 }}
                         onClick={() => onSelectFilter(isActive && filter.id !== "all" ? "all" : filter.id)}
                         className={`flex shrink-0 items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer border ${isActive && filter.id !== "all"
-                                ? "border-primary bg-primary/5 text-primary"
-                                : "border-gray-200 text-gray-700 hover:border-gray-300"
+                            ? "border-primary bg-primary/5 text-primary"
+                            : "border-gray-200 text-gray-700 hover:border-gray-300"
                             }`}
                     >
                         {filter.type === "icon" && (

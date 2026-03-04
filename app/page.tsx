@@ -5,9 +5,9 @@ import Specialties from "@/components/Specialties";
 import Gallery from "@/components/Gallery";
 import Features from "@/components/Features";
 import Testimonials from "@/components/Testimonials";
+import OwnerSpeaks from "@/components/OwnerSpeaks";
+import ContactForm from "@/components/ContactForm";
 import Footer from "@/components/Footer";
-
-
 export default function Home() {
   return (
     <main className="min-h-screen bg-cream text-accent">
@@ -19,6 +19,8 @@ export default function Home() {
       <Gallery />
       <Features />
       <Testimonials />
+      <OwnerSpeaks />
+      <ContactForm />
       <Footer />
     </main>
   );

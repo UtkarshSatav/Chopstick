@@ -5,7 +5,8 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { subscribeToOrder, Order } from "@/lib/orders";
-import { FaCheckCircle, FaTimesCircle, FaClock, FaArrowLeft, FaUtensils } from "react-icons/fa";
+import { FaCheckCircle, FaTimesCircle, FaClock, FaArrowLeft, FaUtensils, FaStar } from "react-icons/fa";
+import FeedbackModal from "@/components/FeedbackModal";
 
 function getStoredOrders(): string[] {
     if (typeof window === "undefined") return [];
@@ -22,7 +23,19 @@ function StatusBadge({ status }: { status: string }) {
         case "accepted":
             return (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-100 text-green-700 text-sm font-bold">
-                    <FaCheckCircle className="text-green-600" /> Accepted
+                    <FaCheckCircle className="text-green-600" /> Preparing
+                </span>
+            );
+        case "out_for_delivery":
+            return (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-100 text-indigo-700 text-sm font-bold">
+                    <FaCheckCircle className="text-indigo-600" /> Out for Delivery
+                </span>
+            );
+        case "delivered":
+            return (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-sm font-bold">
+                    <FaCheckCircle className="text-blue-600" /> Delivered
                 </span>
             );
         case "rejected":
@@ -93,12 +106,22 @@ function OrderCard({ order }: { order: Order }) {
             {/* Status message */}
             {order.status === "accepted" && (
                 <div className="px-5 py-3 bg-green-50 border-t border-green-100">
-                    <p className="text-sm text-green-700 font-medium">🎉 Your order has been accepted! It will be prepared shortly.</p>
+                    <p className="text-sm text-green-700 font-medium">👨‍🍳 Your order is being prepared!</p>
                 </div>
             )}
             {order.status === "rejected" && (
                 <div className="px-5 py-3 bg-red-50 border-t border-red-100">
                     <p className="text-sm text-red-700 font-medium">Sorry, your order was not accepted. Please try again or contact us.</p>
+                </div>
+            )}
+            {order.status === "out_for_delivery" && (
+                <div className="px-5 py-3 bg-indigo-50 border-t border-indigo-100 flex items-center justify-between">
+                    <p className="text-sm text-indigo-700 font-medium">🛵 Your order is out for delivery! It will reach you soon.</p>
+                </div>
+            )}
+            {order.status === "delivered" && (
+                <div className="px-5 py-3 bg-blue-50 border-t border-blue-100 flex items-center justify-between">
+                    <p className="text-sm text-blue-700 font-medium">✨ Your order has been delivered! Enjoy your meal.</p>
                 </div>
             )}
             {order.status === "placed" && (
@@ -113,6 +136,7 @@ function OrderCard({ order }: { order: Order }) {
 export default function OrdersPage() {
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
+    const [feedbackOrderId, setFeedbackOrderId] = useState<string | null>(null);
 
     useEffect(() => {
         const orderIds = getStoredOrders();
@@ -145,6 +169,43 @@ export default function OrdersPage() {
             unsubscribes.forEach((unsub) => unsub());
         };
     }, []);
+
+    useEffect(() => {
+        if (!loading && orders.length > 0) {
+            const deliveredWithoutFeedback = orders.find(o => {
+                if (o.status !== "delivered") return false;
+
+                try {
+                    const stored = localStorage.getItem("chopstick-feedback-given");
+                    const givenFeedback = stored ? JSON.parse(stored) : [];
+                    return !givenFeedback.includes(o.id);
+                } catch {
+                    return true;
+                }
+            });
+
+            if (deliveredWithoutFeedback) {
+                // adding a small delay so they see the page first
+                const timer = setTimeout(() => {
+                    setFeedbackOrderId(deliveredWithoutFeedback.id || null);
+                }, 1500);
+                return () => clearTimeout(timer);
+            }
+        }
+    }, [orders, loading]);
+
+    const handleFeedbackSuccess = () => {
+        if (feedbackOrderId) {
+            try {
+                const stored = localStorage.getItem("chopstick-feedback-given");
+                const givenFeedback = stored ? JSON.parse(stored) : [];
+                localStorage.setItem("chopstick-feedback-given", JSON.stringify([...givenFeedback, feedbackOrderId]));
+            } catch (e) {
+                console.error("Local storage error:", e);
+            }
+        }
+        setFeedbackOrderId(null);
+    };
 
     return (
         <main className="min-h-screen bg-cream flex flex-col">
@@ -188,6 +249,15 @@ export default function OrdersPage() {
             </div>
 
             <Footer />
+
+            <FeedbackModal
+                isOpen={!!feedbackOrderId}
+                orderId={feedbackOrderId || ""}
+                onClose={() => handleFeedbackSuccess()}
+                // Using handleFeedbackSuccess on close to prevent it showing up again. 
+                // Assuming they skipped feedback, we treat it similarly so it doesn't repeatedly harass them.
+                onSubmitSuccess={handleFeedbackSuccess}
+            />
         </main>
     );
 }

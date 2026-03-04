@@ -17,6 +17,21 @@ export default function MenuPage() {
     const [resultsCount, setResultsCount] = useState<number | undefined>(undefined);
     const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
 
+    const handleSelectCategory = (id: string) => {
+        setSelectedCategory(id);
+        setIsCategoryModalOpen(false);
+
+        if (id === "all") {
+            const scrollArea = document.getElementById("scrollable-menu");
+            if (scrollArea) scrollArea.scrollTo({ top: 0, behavior: "smooth" });
+        } else {
+            const element = document.getElementById(id);
+            if (element) {
+                element.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+        }
+    };
+
     return (
         <main className="h-screen flex flex-col bg-white overflow-hidden">
             <Navbar />
@@ -28,10 +43,9 @@ export default function MenuPage() {
             </div>
 
             {/* Scrollable menu area */}
-            <div className="flex-1 overflow-y-auto">
+            <div id="scrollable-menu" className="flex-1 overflow-y-auto">
                 <div className="container mx-auto px-0 sm:px-6 lg:px-8 py-2 sm:py-4">
                     <MenuGrid
-                        selectedCategory={selectedCategory}
                         selectedFilter={selectedFilter}
                         searchQuery={searchQuery}
                         onResultsChange={setResultsCount}
@@ -54,7 +68,7 @@ export default function MenuPage() {
             <CategoryModal
                 isOpen={isCategoryModalOpen}
                 onClose={() => setIsCategoryModalOpen(false)}
-                onSelectCategory={setSelectedCategory}
+                onSelectCategory={handleSelectCategory}
                 selectedCategory={selectedCategory}
             />
         </main>

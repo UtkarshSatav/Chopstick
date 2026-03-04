@@ -34,6 +34,12 @@ export default function CategoryModal({ isOpen, onClose, onSelectCategory, selec
                     });
                 });
 
+                catList.unshift({
+                    id: 'recommended',
+                    name: 'Recommended',
+                    count: 4 // The number of random items we picked in MenuGrid
+                });
+
                 setCategories(catList);
             })
             .catch(error => {
@@ -98,8 +104,8 @@ export default function CategoryModal({ isOpen, onClose, onSelectCategory, selec
                                             }`}
                                     >
                                         <span className={`font-medium ${selectedCategory === cat.id
-                                                ? "text-secondary"
-                                                : "text-gray-800"
+                                            ? "text-secondary"
+                                            : "text-gray-800"
                                             }`}>
                                             {cat.name}
                                         </span>
