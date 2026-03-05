@@ -198,7 +198,7 @@ export default function CartPage() {
         <main className="min-h-screen bg-cream flex flex-col">
             <Navbar />
 
-            <div className="flex-shrink-0 pt-[100px] sm:pt-[112px] md:pt-[128px] relative z-40">
+            <div className="flex-shrink-0 pt-[120px] sm:pt-[140px] md:pt-[160px] relative z-40">
                 <AnimatePresence>
                     {!isOpen && (
                         <motion.div
