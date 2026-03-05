@@ -10,6 +10,7 @@ import { useCart } from "@/context/CartContext";
 const navLinks = [
     { name: "Home", href: "/" },
     { name: "About", href: "/#about" },
+    { name: "Founder", href: "/#founder" },
     { name: "Order Online", href: "/menu" },
     { name: "Gallery", href: "/#gallery" },
     { name: "Contact", href: "/#contact-us" },

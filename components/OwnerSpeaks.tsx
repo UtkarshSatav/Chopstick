@@ -5,7 +5,7 @@ import { FaQuoteLeft } from "react-icons/fa";
 
 export default function OwnerSpeaks() {
     return (
-        <section className="py-20 md:py-32 bg-white overflow-hidden relative">
+        <section id="founder" className="py-20 md:py-32 bg-white overflow-hidden relative scroll-mt-32">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
 
