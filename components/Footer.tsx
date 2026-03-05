@@ -6,7 +6,7 @@ import { FaFacebookF, FaInstagram, FaTwitter, FaPhone, FaEnvelope, FaMapMarkerAl
 
 export default function Footer() {
     return (
-        <footer id="contact" className="bg-accent text-cream pt-16 sm:pt-20 pb-10">
+        <footer className="bg-accent text-cream pt-16 sm:pt-20 pb-10">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
 
