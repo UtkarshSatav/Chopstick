@@ -52,8 +52,13 @@ const ORDERS_COLLECTION = "orders";
  * Place a new order — writes to Firestore and returns the generated order ID.
  */
 export async function placeOrder(orderData: Omit<Order, "id" | "status" | "createdAt" | "updatedAt">): Promise<string> {
+    // Clean data to remove any undefined fields just in case
+    const cleanOrderData = Object.fromEntries(
+        Object.entries(orderData).filter(([_, v]) => v !== undefined)
+    );
+
     const docRef = await addDoc(collection(db, ORDERS_COLLECTION), {
-        ...orderData,
+        ...cleanOrderData,
         status: "placed" as OrderStatus,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),

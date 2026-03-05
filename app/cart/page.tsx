@@ -157,7 +157,7 @@ export default function CartPage() {
             const orderId = await placeOrder({
                 customerName: name,
                 customerPhone: phone.replace(/\D/g, ''),
-                customerEmail: email || undefined,
+                customerEmail: email || "",
                 items: cart.map(item => ({
                     id: item.id,
                     name: item.name,
@@ -171,7 +171,7 @@ export default function CartPage() {
                 address: {
                     flatNo,
                     area,
-                    landmark: landmark || undefined,
+                    landmark: landmark || "",
                     distance,
                 },
             });
