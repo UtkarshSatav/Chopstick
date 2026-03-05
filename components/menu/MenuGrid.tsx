@@ -5,6 +5,7 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaPlus, FaMinus } from "react-icons/fa";
 import { useCart } from "@/context/CartContext";
+import { subscribeToMenu } from "@/lib/menu";
 
 const categoryImages: Record<string, string> = {
     "chinese": "https://images.unsplash.com/photo-1512058564366-18510be2db19?q=80&w=2672",
@@ -166,17 +167,14 @@ export default function MenuGrid({ selectedFilter = "all", searchQuery = "", onR
     const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
 
     useEffect(() => {
-        fetch('/Menu.json')
-            .then(response => response.json())
-            .then(data => {
+        const unsub = subscribeToMenu((data) => {
+            if (data) {
                 const processedProducts = processMenuData(data);
                 setProducts(processedProducts);
-                setLoading(false);
-            })
-            .catch(error => {
-                console.error('Error loading menu:', error);
-                setLoading(false);
-            });
+            }
+            setLoading(false);
+        });
+        return () => unsub();
     }, []);
 
     const filteredProducts = useMemo(() => {

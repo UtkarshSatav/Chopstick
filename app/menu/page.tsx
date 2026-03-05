@@ -1,14 +1,15 @@
 "use client";
 
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { FaUtensils } from "react-icons/fa";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { FaUtensils, FaExclamationTriangle } from "react-icons/fa";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import MenuGrid from "@/components/menu/MenuGrid";
 import FilterChips from "@/components/menu/FilterChips";
 import SearchBar from "@/components/menu/SearchBar";
 import CategoryModal from "@/components/menu/CategoryModal";
+import { subscribeToRestaurantStatus } from "@/lib/status";
 
 export default function MenuPage() {
     const [selectedCategory, setSelectedCategory] = useState("all");
@@ -16,6 +17,14 @@ export default function MenuPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [resultsCount, setResultsCount] = useState<number | undefined>(undefined);
     const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+    const [isOpen, setIsOpen] = useState(true);
+
+    useEffect(() => {
+        const unsub = subscribeToRestaurantStatus((status) => {
+            setIsOpen(status.isOpen);
+        });
+        return () => unsub();
+    }, []);
 
     const handleSelectCategory = (id: string) => {
         setSelectedCategory(id);
@@ -38,6 +47,21 @@ export default function MenuPage() {
 
             {/* Fixed header area: search + filters (sits below navbar, never scrolls) */}
             <div className="flex-shrink-0 pt-[100px] sm:pt-[112px] md:pt-[128px]">
+                <AnimatePresence>
+                    {!isOpen && (
+                        <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            className="bg-red-600 text-white overflow-hidden"
+                        >
+                            <div className="container mx-auto px-4 py-2 flex items-center justify-center gap-2 text-xs sm:text-sm font-bold">
+                                <FaExclamationTriangle className="animate-pulse" />
+                                <span>WE ARE CURRENTLY CLOSED FOR NEW ORDERS</span>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
                 <SearchBar onSearchChange={setSearchQuery} searchQuery={searchQuery} resultsCount={resultsCount} />
                 <FilterChips selectedFilter={selectedFilter} onSelectFilter={setSelectedFilter} />
             </div>

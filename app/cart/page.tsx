@@ -11,6 +11,7 @@ import Footer from "@/components/Footer";
 import { FaTrash, FaPlus, FaMinus, FaMapMarkerAlt, FaWhatsapp, FaShoppingBag } from "react-icons/fa";
 import { calculateDeliveryCharge, calculateDistance } from "@/utils/deliveryUtils";
 import { placeOrder } from "@/lib/orders";
+import { subscribeToRestaurantStatus } from "@/lib/status";
 
 // Pune coordinates based on Footer location
 const RESTAURANT_COORDS = { lat: 18.572548, lng: 73.914478 };
@@ -20,6 +21,14 @@ export default function CartPage() {
     const router = useRouter();
     const { cart, removeFromCart, updateQuantity, cartTotal, clearCart } = useCart();
     const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+    const [isOpen, setIsOpen] = useState(true);
+
+    useEffect(() => {
+        const unsub = subscribeToRestaurantStatus((status) => {
+            setIsOpen(status.isOpen);
+        });
+        return () => unsub();
+    }, []);
 
     // User Details
     const [name, setName] = useState("");
@@ -123,9 +132,14 @@ export default function CartPage() {
         return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
     };
 
-    const isFormValid = name && isValidPhone(phone) && isValidEmail(email) && flatNo && area && distance && !locationError && cart.length > 0;
+    const isFormValid = isOpen && name && isValidPhone(phone) && isValidEmail(email) && flatNo && area && distance && !locationError && cart.length > 0;
 
     const handlePlaceOrder = async () => {
+        if (!isOpen) {
+            alert("Sorry, we are currently closed and not accepting new orders.");
+            return;
+        }
+
         if (!isFormValid) {
             if (!name) alert("Please enter your name.");
             else if (!phone) alert("Please enter your phone number.");
@@ -383,10 +397,12 @@ export default function CartPage() {
                                     className={`w-full font-bold py-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 mt-4 text-white uppercase tracking-wider
                                         ${isFormValid && !isPlacingOrder
                                             ? 'bg-primary hover:bg-accent cursor-pointer transform hover:-translate-y-1'
-                                            : 'bg-gray-300 cursor-not-allowed'}`}
+                                            : !isOpen ? 'bg-red-500 cursor-not-allowed' : 'bg-gray-300 cursor-not-allowed'}`}
                                 >
                                     {isPlacingOrder ? (
                                         <><span className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full"></span> Placing Order...</>
+                                    ) : !isOpen ? (
+                                        <>Store Closed</>
                                     ) : (
                                         <><FaShoppingBag className="text-lg" /> Place Order</>
                                     )}
@@ -408,10 +424,10 @@ export default function CartPage() {
                                     className={`block w-full text-center font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2 text-sm
                                         ${isFormValid
                                             ? 'bg-[#25D366] text-white hover:bg-[#128C7E] cursor-pointer'
-                                            : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
+                                            : !isOpen ? 'bg-gray-100 text-gray-400 cursor-not-allowed border' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
                                 >
                                     <FaWhatsapp className="text-lg" />
-                                    Order via WhatsApp
+                                    {isOpen ? "Order via WhatsApp" : "Store Closed"}
                                 </a>
                             </div>
                         </div>
