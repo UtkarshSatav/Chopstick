@@ -8,7 +8,7 @@ export default function About() {
     const [isExpanded, setIsExpanded] = useState(false);
 
     return (
-        <section id="about" className="py-16 sm:py-24 md:py-32 bg-cream overflow-hidden">
+        <section id="about" className="py-16 sm:py-24 md:py-32 bg-cream overflow-hidden scroll-mt-32">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex flex-col lg:flex-row items-start gap-12 lg:gap-20">
 

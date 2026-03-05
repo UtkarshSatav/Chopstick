@@ -38,7 +38,7 @@ export default function ContactForm() {
     };
 
     return (
-        <section id="contact" className="py-20 bg-cream scroll-mt-32">
+        <section id="contact-us" className="py-20 bg-cream scroll-mt-32">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="max-w-3xl mx-auto bg-white p-8 md:p-12 rounded-sm shadow-xl border-t-4 border-primary">
                     <div className="text-center mb-10">

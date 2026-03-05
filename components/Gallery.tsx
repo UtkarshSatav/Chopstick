@@ -31,7 +31,7 @@ export default function Gallery() {
         : galleryImages.filter(img => img.category === filter);
 
     return (
-        <section id="gallery" className="py-16 sm:py-24 md:py-32 bg-white">
+        <section id="gallery" className="py-16 sm:py-24 md:py-32 bg-white scroll-mt-32">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center mb-10 sm:mb-12">
                     <h3 className="text-secondary uppercase tracking-[0.2em] font-bold text-xs sm:text-sm mb-3">Gallery</h3>
