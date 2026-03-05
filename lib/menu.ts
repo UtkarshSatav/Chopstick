@@ -22,18 +22,31 @@ export async function getMenuFromDb() {
 
 export function subscribeToMenu(callback: (menu: any) => void): () => void {
     const docRef = doc(db, MENU_COLLECTION, MENU_DOC_ID);
-    return onSnapshot(docRef, async (snap) => {
-        if (snap.exists()) {
-            callback(snap.data());
-        } else {
-            // Fallback
+    return onSnapshot(
+        docRef,
+        async (snap) => {
+            if (snap.exists()) {
+                callback(snap.data());
+            } else {
+                // Fallback
+                try {
+                    const res = await fetch("/Menu.json");
+                    const data = await res.json();
+                    callback(data);
+                } catch (e) {
+                    console.error("Failed to fetch fallback static menu");
+                }
+            }
+        },
+        async (error) => {
+            console.error("Firestore menu subscription error, falling back to static menu:", error);
             try {
                 const res = await fetch("/Menu.json");
                 const data = await res.json();
                 callback(data);
             } catch (e) {
-                console.error("Failed to fetch fallback static menu");
+                console.error("Failed to fetch fallback static menu after Firestore error");
             }
         }
-    });
+    );
 }

@@ -20,11 +20,18 @@ export async function getRestaurantStatus(): Promise<RestaurantStatus> {
 
 export function subscribeToRestaurantStatus(callback: (status: RestaurantStatus) => void): () => void {
     const docRef = doc(db, SETTINGS_COLLECTION, RESTAURANT_DOC_ID);
-    return onSnapshot(docRef, (snap) => {
-        if (snap.exists()) {
-            callback(snap.data() as RestaurantStatus);
-        } else {
+    return onSnapshot(
+        docRef,
+        (snap) => {
+            if (snap.exists()) {
+                callback(snap.data() as RestaurantStatus);
+            } else {
+                callback({ isOpen: true });
+            }
+        },
+        (error) => {
+            console.error("Firestore status subscription error, defaulting to open:", error);
             callback({ isOpen: true });
         }
-    });
+    );
 }

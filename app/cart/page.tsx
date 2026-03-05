@@ -8,7 +8,8 @@ import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { FaTrash, FaPlus, FaMinus, FaMapMarkerAlt, FaWhatsapp, FaShoppingBag } from "react-icons/fa";
+import { motion, AnimatePresence } from "framer-motion";
+import { FaTrash, FaPlus, FaMinus, FaMapMarkerAlt, FaWhatsapp, FaShoppingBag, FaExclamationTriangle } from "react-icons/fa";
 import { calculateDeliveryCharge, calculateDistance } from "@/utils/deliveryUtils";
 import { placeOrder } from "@/lib/orders";
 import { subscribeToRestaurantStatus } from "@/lib/status";
@@ -197,8 +198,26 @@ export default function CartPage() {
         <main className="min-h-screen bg-cream flex flex-col">
             <Navbar />
 
-            <div className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 pt-40 pb-24 sm:py-32">
-                <h1 className="text-3xl md:text-4xl font-display font-bold text-accent mb-8 text-center">Your Cart</h1>
+            <div className="flex-shrink-0 pt-[100px] sm:pt-[112px] md:pt-[128px] relative z-40">
+                <AnimatePresence>
+                    {!isOpen && (
+                        <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            className="bg-red-600 text-white overflow-hidden"
+                        >
+                            <div className="container mx-auto px-4 py-2 flex items-center justify-center gap-2 text-xs sm:text-sm font-bold uppercase">
+                                <FaExclamationTriangle className="animate-pulse" />
+                                <span>We are currently closed for new orders</span>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
+
+            <div className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 pb-24 sm:py-32">
+                <h1 className="text-3xl md:text-4xl font-display font-bold text-accent mb-8 text-center pt-8 sm:pt-0">Your Cart</h1>
 
                 {cart.length === 0 ? (
                     <div className="text-center space-y-6 bg-white p-8 rounded-2xl shadow-sm max-w-lg mx-auto">

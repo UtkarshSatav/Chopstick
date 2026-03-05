@@ -107,13 +107,20 @@ export async function updateOrderStatus(orderId: string, status: OrderStatus): P
  * Returns an unsubscribe function.
  */
 export function subscribeToOrder(orderId: string, callback: (order: Order | null) => void): () => void {
-    return onSnapshot(doc(db, ORDERS_COLLECTION, orderId), (docSnap) => {
-        if (!docSnap.exists()) {
+    return onSnapshot(
+        doc(db, ORDERS_COLLECTION, orderId),
+        (docSnap) => {
+            if (!docSnap.exists()) {
+                callback(null);
+                return;
+            }
+            callback({ id: docSnap.id, ...docSnap.data() } as Order);
+        },
+        (error) => {
+            console.error(`Error subscribing to order ${orderId}:`, error);
             callback(null);
-            return;
         }
-        callback({ id: docSnap.id, ...docSnap.data() } as Order);
-    });
+    );
 }
 
 /**
@@ -122,8 +129,15 @@ export function subscribeToOrder(orderId: string, callback: (order: Order | null
  */
 export function subscribeToAllOrders(callback: (orders: Order[]) => void): () => void {
     const q = query(collection(db, ORDERS_COLLECTION), orderBy("createdAt", "desc"));
-    return onSnapshot(q, (snapshot) => {
-        const orders = snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as Order));
-        callback(orders);
-    });
+    return onSnapshot(
+        q,
+        (snapshot) => {
+            const orders = snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as Order));
+            callback(orders);
+        },
+        (error) => {
+            console.error("Error subscribing to all orders:", error);
+            callback([]);
+        }
+    );
 }

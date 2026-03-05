@@ -46,7 +46,7 @@ export default function MenuPage() {
             <Navbar />
 
             {/* Fixed header area: search + filters (sits below navbar, never scrolls) */}
-            <div className="flex-shrink-0 pt-[100px] sm:pt-[112px] md:pt-[128px]">
+            <div className="flex-shrink-0 pt-[100px] sm:pt-[112px] md:pt-[128px] relative z-40">
                 <AnimatePresence>
                     {!isOpen && (
                         <motion.div
