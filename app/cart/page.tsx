@@ -207,7 +207,7 @@ export default function CartPage() {
                             exit={{ height: 0, opacity: 0 }}
                             className="bg-red-600 text-white overflow-hidden"
                         >
-                            <div className="container mx-auto px-4 py-2 flex items-center justify-center gap-2 text-xs sm:text-sm font-bold uppercase">
+                            <div className="container mx-auto px-4 py-3 flex items-center justify-center gap-2 text-xs sm:text-sm font-bold uppercase shadow-inner">
                                 <FaExclamationTriangle className="animate-pulse" />
                                 <span>We are currently closed for new orders</span>
                             </div>
