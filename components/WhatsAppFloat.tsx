@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 export default function WhatsAppFloat() {
     return (
         <motion.a
-            href="https://wa.me/919665065344"
+            href="https://wa.me/919890082699"
             target="_blank"
             rel="noopener noreferrer"
             whileHover={{ scale: 1.1 }}

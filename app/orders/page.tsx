@@ -6,8 +6,6 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { subscribeToOrder, Order } from "@/lib/orders";
 import { FaCheckCircle, FaTimesCircle, FaClock, FaArrowLeft, FaUtensils, FaStar } from "react-icons/fa";
-import FeedbackModal from "@/components/FeedbackModal";
-
 function getStoredOrders(): string[] {
     if (typeof window === "undefined") return [];
     try {
@@ -136,7 +134,6 @@ function OrderCard({ order }: { order: Order }) {
 export default function OrdersPage() {
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
-    const [feedbackOrderId, setFeedbackOrderId] = useState<string | null>(null);
 
     useEffect(() => {
         const orderIds = getStoredOrders();
@@ -170,42 +167,7 @@ export default function OrdersPage() {
         };
     }, []);
 
-    useEffect(() => {
-        if (!loading && orders.length > 0) {
-            const deliveredWithoutFeedback = orders.find(o => {
-                if (o.status !== "delivered") return false;
 
-                try {
-                    const stored = localStorage.getItem("chopstick-feedback-given");
-                    const givenFeedback = stored ? JSON.parse(stored) : [];
-                    return !givenFeedback.includes(o.id);
-                } catch {
-                    return true;
-                }
-            });
-
-            if (deliveredWithoutFeedback) {
-                // adding a small delay so they see the page first
-                const timer = setTimeout(() => {
-                    setFeedbackOrderId(deliveredWithoutFeedback.id || null);
-                }, 1500);
-                return () => clearTimeout(timer);
-            }
-        }
-    }, [orders, loading]);
-
-    const handleFeedbackSuccess = () => {
-        if (feedbackOrderId) {
-            try {
-                const stored = localStorage.getItem("chopstick-feedback-given");
-                const givenFeedback = stored ? JSON.parse(stored) : [];
-                localStorage.setItem("chopstick-feedback-given", JSON.stringify([...givenFeedback, feedbackOrderId]));
-            } catch (e) {
-                console.error("Local storage error:", e);
-            }
-        }
-        setFeedbackOrderId(null);
-    };
 
     return (
         <main className="min-h-screen bg-cream flex flex-col">
@@ -249,15 +211,6 @@ export default function OrdersPage() {
             </div>
 
             <Footer />
-
-            <FeedbackModal
-                isOpen={!!feedbackOrderId}
-                orderId={feedbackOrderId || ""}
-                onClose={() => handleFeedbackSuccess()}
-                // Using handleFeedbackSuccess on close to prevent it showing up again. 
-                // Assuming they skipped feedback, we treat it similarly so it doesn't repeatedly harass them.
-                onSubmitSuccess={handleFeedbackSuccess}
-            />
         </main>
     );
 }

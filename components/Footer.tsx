@@ -59,7 +59,7 @@ export default function Footer() {
                             </li>
                             <li className="flex flex-col sm:flex-row items-center gap-3">
                                 <FaPhone className="text-primary flex-shrink-0" />
-                                <span>9665065344 / 9890082699</span>
+                                <span>9890082699 / 9665065344</span>
                             </li>
                             <li className="flex flex-col sm:flex-row items-center gap-3">
                                 <FaEnvelope className="text-primary flex-shrink-0" />

@@ -160,7 +160,7 @@ export default function Navbar() {
                                 <div className="flex justify-between items-center">
                                     <div className="space-y-1">
                                         <p className="text-primary text-xs uppercase tracking-[0.2em] font-bold">Contact Us</p>
-                                        <p className="text-gray-600 text-sm">+91 98765 43210</p>
+                                        <p className="text-gray-600 text-sm">+91 98900 82699</p>
                                     </div>
                                     <div className="flex gap-4">
                                         <a href="#" className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center text-gray-800 hover:bg-primary hover:border-primary hover:text-white transition-all">

@@ -39,7 +39,7 @@ export default function ContactPage() {
                             <div>
                                 <h3 className="text-2xl font-display font-bold text-accent mb-6">Get in Touch</h3>
                                 <p className="text-gray-600 mb-8 font-light">
-                                    Have a question or feedback? We'd love to hear from you.
+                                    Have a question? We'd love to hear from you.
                                     Reach out to us through any of the following channels.
                                 </p>
                             </div>
@@ -61,7 +61,7 @@ export default function ContactPage() {
                                     </div>
                                     <div>
                                         <h4 className="font-bold text-accent">Phone</h4>
-                                        <p className="text-gray-600 text-sm">9665065344 / 9890082699</p>
+                                        <p className="text-gray-600 text-sm">9890082699 / 9665065344</p>
                                     </div>
                                 </div>
 

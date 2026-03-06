@@ -13,8 +13,8 @@ export default function OwnerSpeaks() {
                     <div className="w-full lg:w-5/12 relative">
                         <div className="relative w-64 h-64 sm:w-80 sm:h-80 md:w-96 md:h-96 mx-auto rounded-full overflow-hidden shadow-2xl border-4 border-cream">
                             <Image
-                                src="https://images.unsplash.com/photo-1552566626-52f8b828add9?q=80&w=2670"
-                                alt="Owner of Chopsticks Spice Malabar"
+                                src="/owner_saju.jpg"
+                                alt="Mr. Saju Antony - Owner of Chopsticks Spice Malabar"
                                 fill
                                 className="object-cover"
                             />
@@ -36,8 +36,8 @@ export default function OwnerSpeaks() {
                             </p>
 
                             <div>
-                                <h4 className="text-xl font-bold font-display text-accent mb-1">Mr. Santosh Nair</h4>
-                                <p className="text-sm font-medium text-primary uppercase tracking-wider">Founder & Head Chef</p>
+                                <h4 className="text-xl font-bold font-display text-accent mb-1">Mr. Saju Antony</h4>
+                                <p className="text-sm font-medium text-primary uppercase tracking-wider">Owner & Head Visionary</p>
                             </div>
                         </div>
                     </div>

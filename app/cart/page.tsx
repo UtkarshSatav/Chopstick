@@ -16,7 +16,7 @@ import { subscribeToRestaurantStatus } from "@/lib/status";
 
 // Pune coordinates based on Footer location
 const RESTAURANT_COORDS = { lat: 18.572548, lng: 73.914478 };
-const WHATSAPP_NUMBER = "919607507443";
+const WHATSAPP_NUMBER = "919890082699";
 
 export default function CartPage() {
     const router = useRouter();
