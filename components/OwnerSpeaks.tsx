@@ -25,7 +25,7 @@ export default function OwnerSpeaks() {
 
                     {/* Content */}
                     <div className="w-full lg:w-7/12 text-center lg:text-left">
-                        <h3 className="text-secondary uppercase tracking-[0.2em] font-bold text-xs sm:text-sm mb-3">A Word From Our Founder</h3>
+                        <h3 className="text-secondary uppercase tracking-[0.2em] font-bold text-base sm:text-lg mb-3">A Word From Our Owner</h3>
                         <h2 className="text-3xl md:text-5xl font-display font-bold text-accent mb-6">Serving Pune for 25 Years</h2>
                         <div className="w-16 h-1 bg-primary mx-auto lg:mx-0 rounded-full mb-8"></div>
 

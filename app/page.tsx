@@ -6,7 +6,6 @@ import Gallery from "@/components/Gallery";
 import Features from "@/components/Features";
 import Testimonials from "@/components/Testimonials";
 import OwnerSpeaks from "@/components/OwnerSpeaks";
-import ContactForm from "@/components/ContactForm";
 import Footer from "@/components/Footer";
 export default function Home() {
   return (
@@ -20,7 +19,6 @@ export default function Home() {
       <Features />
       <Testimonials />
       <OwnerSpeaks />
-      <ContactForm />
       <Footer />
     </main>
   );

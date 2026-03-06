@@ -10,10 +10,10 @@ import { useCart } from "@/context/CartContext";
 const navLinks = [
     { name: "Home", href: "/" },
     { name: "About", href: "/#about" },
-    { name: "Founder", href: "/#founder" },
+    { name: "Word from Owner", href: "/#founder" },
     { name: "Order Online", href: "/menu" },
     { name: "Gallery", href: "/#gallery" },
-    { name: "Contact", href: "/#contact-us" },
+    { name: "Contact", href: "/contact" },
 ];
 
 export default function Navbar() {
