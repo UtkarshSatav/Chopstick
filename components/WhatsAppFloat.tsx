@@ -2,8 +2,14 @@
 
 import { FaWhatsapp } from "react-icons/fa";
 import { motion } from "framer-motion";
+import { usePathname } from "next/navigation";
 
 export default function WhatsAppFloat() {
+    const pathname = usePathname();
+
+    // Hide WhatsApp float on the Menu (Order Online) page
+    if (pathname === "/menu") return null;
+
     return (
         <motion.a
             href="https://wa.me/919890082699"

@@ -9,14 +9,13 @@ import { useCart } from "@/context/CartContext";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaTrash, FaPlus, FaMinus, FaMapMarkerAlt, FaWhatsapp, FaShoppingBag, FaExclamationTriangle } from "react-icons/fa";
+import { FaTrash, FaPlus, FaMinus, FaMapMarkerAlt, FaShoppingBag, FaExclamationTriangle } from "react-icons/fa";
 import { calculateDeliveryCharge, calculateDistance } from "@/utils/deliveryUtils";
 import { placeOrder } from "@/lib/orders";
 import { subscribeToRestaurantStatus } from "@/lib/status";
 
 // Pune coordinates based on Footer location
 const RESTAURANT_COORDS = { lat: 18.572548, lng: 73.914478 };
-const WHATSAPP_NUMBER = "919890082699";
 
 export default function CartPage() {
     const router = useRouter();
@@ -95,33 +94,6 @@ export default function CartPage() {
         );
     };
 
-    const generateWhatsAppLink = () => {
-        let message = `*New Order from ${name}*\n`;
-        message += `Phone: ${phone}\n`;
-        if (email) message += `Email: ${email}\n`;
-
-        message += `\n*Delivery Address:*\n`;
-        message += `${flatNo}\n`;
-        message += `${area}\n`;
-        if (landmark) message += `Landmark: ${landmark}\n`;
-        if (distance) message += `(Distance: ${distance} km)\n\n`;
-
-        message += `*Order Details:*\n`;
-
-        cart.forEach((item) => {
-            message += `- ${item.name} x ${item.quantity} = ₹${item.price * item.quantity}\n`;
-        });
-
-        message += `\n*Subtotal: ₹${cartTotal}*`;
-        message += `\n*Delivery Charge: ₹${deliveryCharge}*`;
-        const total = cartTotal + deliveryCharge;
-        message += `\n*Total Amount: ₹${total}*`;
-
-        message += `\n\nPlease confirm my order.`;
-
-        const encodedMessage = encodeURIComponent(message);
-        return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
-    };
 
     const isValidPhone = (p: string) => {
         const cleaned = p.replace(/\D/g, '');
@@ -430,24 +402,7 @@ export default function CartPage() {
                                     Your order will be sent to the restaurant for confirmation.
                                 </p>
 
-                                <div className="relative my-4">
-                                    <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200"></div></div>
-                                    <div className="relative flex justify-center"><span className="bg-white px-3 text-xs text-gray-400">or</span></div>
-                                </div>
 
-                                <a
-                                    href={isFormValid ? generateWhatsAppLink() : undefined}
-                                    target={isFormValid ? "_blank" : undefined}
-                                    rel="noreferrer"
-                                    onClick={(e) => { if (!isFormValid) e.preventDefault(); }}
-                                    className={`block w-full text-center font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2 text-sm
-                                        ${isFormValid
-                                            ? 'bg-[#25D366] text-white hover:bg-[#128C7E] cursor-pointer'
-                                            : !isOpen ? 'bg-gray-100 text-gray-400 cursor-not-allowed border' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
-                                >
-                                    <FaWhatsapp className="text-lg" />
-                                    {isOpen ? "Order via WhatsApp" : "Store Closed"}
-                                </a>
                             </div>
                         </div>
                     </div>
